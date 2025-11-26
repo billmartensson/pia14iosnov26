@@ -10,8 +10,8 @@ import SwiftUI
 
 struct Shopitem : Identifiable {
     let id = UUID()
-    let name : String
-    let amount : Int
+    var name : String
+    var amount : Int
     var isDone = false
 }
 
@@ -22,7 +22,6 @@ struct Shopitem : Identifiable {
     var isError = false
     
     func loadshopping() {
-        
         let s1 = Shopitem(name: "Apelsin", amount: 10)
         let s2 = Shopitem(name: "Banan", amount: 12)
         
@@ -30,23 +29,34 @@ struct Shopitem : Identifiable {
         shopping.append(s2)
     }
     
-    func addShop(addname : String, addamount : String) {
+    func addShop(addname : String, addamount : String, shopthing : Shopitem?) -> Bool {
         
         guard let amountnumber = Int(addamount) else {
             isError = true
-            return
+            return false
         }
         
         guard addname != "" else {
             isError = true
-            return
+            return false
         }
                 
-        let s1 = Shopitem(name: addname, amount: amountnumber)
-
-        shopping.append(s1)
-
+        if shopthing == nil {
+            // ADD
+            let s1 = Shopitem(name: addname, amount: amountnumber)
+            shopping.append(s1)
+        } else {
+            // EDIT
+            if let shopindex = shopping.firstIndex(where: { $0.id == shopthing!.id }) {
+                
+                shopping[shopindex].name = addname
+                shopping[shopindex].amount = amountnumber
+            }
+        }
+        
         isError = false
+        
+        return true
     }
     
     func deleteShop(deletething : Shopitem) {

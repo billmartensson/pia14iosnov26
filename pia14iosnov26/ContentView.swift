@@ -14,21 +14,61 @@ struct ContentView: View {
     @State var addname = ""
     @State var addamount = ""
     
+    @State var selectedshop : Shopitem?
+    
+    @State var showlisttype = "all"
+    
+    func addshop() {
+        let addresult = shopcode.addShop(addname: addname, addamount: addamount, shopthing: selectedshop)
+        
+        if addresult == true {
+            // GICK BRA
+            selectedshop = nil
+            addname = ""
+            addamount = ""
+        } else {
+            // GICK DÅLIGT
+        }
+    }
+    
+    func getsortedlist() -> [Shopitem] {
+        /*
+        return shopcode.shopping.sorted(by: { $0.name < $1.name })
+         */
+        
+        if showlisttype == "all" {
+            return shopcode.shopping
+        }
+        if showlisttype == "notdone" {
+            return shopcode.shopping.filter({$0.isDone == false})
+        }
+        if showlisttype == "done" {
+            return shopcode.shopping.filter({$0.isDone == true})
+        }
+
+        return shopcode.shopping
+    }
+    
     var body: some View {
         VStack {
             
             HStack {
-
                 TextField("Name", text: $addname)
-                    .background(Color.red)
+                    .background(Color.cyan)
 
                 TextField("Amount", text: $addamount)
-                    .background(Color.green)
+                    .background(Color.cyan)
                     .frame(width: 50)
 
-                Button("ADD") {
-                    shopcode.addShop(addname: addname, addamount: addamount)
+                Button(selectedshop == nil ? "ADD" : "SAVE") {
+                    addshop()
                 }
+            }
+            
+            Button("Clear") {
+                selectedshop = nil
+                addname = ""
+                addamount = ""
             }
             
             if shopcode.isError {
@@ -39,12 +79,42 @@ struct ContentView: View {
                 .background(Color.red)
             }
             
-            List(shopcode.shopping) { shopthing in
+            HStack {
+                
+                Button("ALL") {
+                    showlisttype = "all"
+                }
+                .padding()
+                .background(showlisttype == "all" ? Color.yellow : Color.clear)
+                
+                Button("TO BUY") {
+                    showlisttype = "notdone"
+                }
+                .padding()
+                .background(showlisttype == "notdone" ? Color.yellow : Color.clear)
+
+                Button("BOUGHT") {
+                    showlisttype = "done"
+                }
+                .padding()
+                .background(showlisttype == "done" ? Color.yellow : Color.clear)
+
+            }
+            
+            
+            List(getsortedlist()) { shopthing in
                 
                 Button(action: {
-                    
+                    selectedshop = shopthing
+                    addname = shopthing.name
+                    addamount = "\(shopthing.amount)"
                 }) {
                     HStack {
+                        
+                        if selectedshop?.id == shopthing.id {
+                            Text("✏️")
+                        }
+                        
                         Text(shopthing.name)
                         Spacer()
                         Text("\(shopthing.amount)")
